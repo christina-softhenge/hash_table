@@ -5,6 +5,16 @@
 int main() {
     HashTable<int,int> map;
     map.insert(4,3);
-    std::cout << map[4] << '\n';
-    std::cout << map.find(4) << " " << map.find(5) << " " << map.size() << '\n';
+    map.insert(21,2);
+    if (map.begin()) {
+        std::cout << "non null\n";
+    } else {
+        std::cout << "null\n";
+    }
+    std::cout << map.begin()->pair.first << '\n';
+    std::cout << map[4] << ' ' << map[21] << ' ' << map[7] << '\n';
+    map.print();
+    map.end();
+    map.find(21);
+    return 0;
 }
