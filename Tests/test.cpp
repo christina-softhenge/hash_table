@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "Headers/hash_table_int.h"
+#include "Headers/hash_table_string.h"
 
 int SubscriptTest(int a, int b) {
     HashTable<int,int> map;
@@ -7,21 +8,47 @@ int SubscriptTest(int a, int b) {
     return map[a];
 }
 
-bool FindTest(HashTable<int,int>& map, int a) {
-    return map.find(a);
+int FindTest(HashTable<int,int>& map, int a) {
+    auto iter = map.find(a);
+    if (iter == map.end()) { 
+        std::cout << "out of range\n";
+        return 0;
+    }
+    return iter->pair.second;
+}
+
+int FindTestString(HashTable<std::string,int>& map, const std::string& key) {
+    auto iter = map.find(key);
+    if (iter == map.end()) { 
+        std::cout << "out of range\n";
+        return 0;
+    }
+    return iter->pair.second;
 }
 
 TEST(SubscriptionTest,HandlesSubscription) {
     EXPECT_EQ(SubscriptTest(2,3),3);
     EXPECT_EQ(SubscriptTest(-2,-3),-3);
 }
-TEST(SubscriptionTest,HandlesFindAndInsert) {
-    HashTable<int,int> map;
-    map.insert(4,5);
-    map.insert(3,6);
-    map.insert(9,10);
-    EXPECT_EQ(FindTest(map, 4), true);
-    EXPECT_EQ(FindTest(map, 75), false);
+
+TEST(FindAndInsertTest,HandlesFindAndInsert) {
+    HashTable<int,int> mapint;
+    for (int i = 0; i < 100; ++i) {
+        mapint.insert(i,i);
+    }
+    for (int i = 0; i < 100; ++i) {
+        EXPECT_EQ(FindTest(mapint,i),i);
+    }
+}
+
+TEST(StringFindAndInsertTest,HandlesStringFindAndInsert) {
+    HashTable<std::string,int> mapString;
+    for (int i = 0; i < 100; ++i) {
+        mapString.insert(std::to_string(i),i);
+    }
+    for (int i = 0; i < 100; ++i) {
+        EXPECT_EQ(FindTestString(mapString,std::to_string(i)),i);
+    }
 }
 
 int main(int argc, char **argv) {

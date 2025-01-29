@@ -85,8 +85,27 @@ public:
             reference operator*() { return &m_ptr; }
             pointer operator->() { return m_ptr; }
 
-            operator bool() const{
+            operator bool() const
+            {
                 return m_ptr != nullptr;
+            }
+
+            bool operator==(const Iterator &oth)
+            {
+                if (this->m_ptr == oth.m_ptr)
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            bool operator!=(const Iterator &oth)
+            {
+                if (this->m_ptr != oth.m_ptr)
+                {
+                    return true;
+                }
+                return false;
             }
 
             Iterator& operator++() {
@@ -131,7 +150,7 @@ public:
         return Iterator(*m_HashTable.end(), this); 
     }
 
-    Iterator find(int key) {
+    Iterator find(std::string key) {
         for (Iterator it = begin(); it != end(); ++it) {
             if (it->pair.first == key) {
                 return it;

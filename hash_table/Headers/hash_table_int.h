@@ -73,31 +73,56 @@ public:
     std::vector<Node*> m_HashTable;
 
     public:
-        struct Iterator {
+        struct Iterator
+        {
             using iterator_category = std::forward_iterator_tag;
             using difference_type = std::ptrdiff_t;
-            using value_type = Node; 
-            using pointer = value_type*;
-            using reference = value_type&;
+            using value_type = Node;
+            using pointer = value_type *;
+            using reference = value_type &;
 
-            Iterator(pointer ptr, HashTable* table) : m_ptr{ptr}, m_table{table} {}
+            Iterator(pointer ptr, HashTable *table) : m_ptr{ptr}, m_table{table} {}
             reference operator*() { return &m_ptr; }
             pointer operator->() { return m_ptr; }
 
-            operator bool() const{
+            operator bool() const
+            {
                 return m_ptr != nullptr;
             }
 
-            Iterator& operator++() {
-                if (!m_ptr) {
+            bool operator==(const Iterator &oth)
+            {
+                if (this->m_ptr == oth.m_ptr)
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            bool operator!=(const Iterator &oth)
+            {
+                if (this->m_ptr != oth.m_ptr)
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            Iterator &operator++()
+            {
+                if (!m_ptr)
+                {
                     return *this;
                 }
-                if (m_ptr->next) {
+                if (m_ptr->next)
+                {
                     m_ptr = m_ptr->next;
                     return *this;
                 }
-                for (int i = m_table->hashFunction(m_ptr->pair.first) + 1; i < m_table->m_tableSize; ++i) {
-                    if (m_table->m_HashTable[i]) {
+                for (int i = m_table->hashFunction(m_ptr->pair.first) + 1; i < m_table->m_tableSize; ++i)
+                {
+                    if (m_table->m_HashTable[i])
+                    {
                         m_ptr = m_table->m_HashTable[i];
                         return *this;
                     }
@@ -106,16 +131,17 @@ public:
                 return *this;
             }
 
-        Iterator operator++(int) {
-            Iterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
+            Iterator operator++(int)
+            {
+                Iterator tmp = *this;
+                ++(*this);
+                return tmp;
+            }
 
-        private:
+        public:
             pointer m_ptr;
-            HashTable* m_table; 
-    };
+            HashTable *m_table;
+        };
 
     Iterator begin() {
         for (Node* node : m_HashTable) {
@@ -131,7 +157,7 @@ public:
     }
 
     Iterator find(int key) {
-        for (Iterator it = begin(); it != end(); ++it) {
+        for (Iterator it = this->begin(); it != this->end(); ++it) {
             if (it->pair.first == key) {
                 return it;
             }
