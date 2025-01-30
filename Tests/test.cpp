@@ -8,6 +8,12 @@ int SubscriptTest(int a, int b) {
     return map[a];
 }
 
+int SubscriptTestString(std::string a, int b) {
+    HashTable<std::string,int> map;
+    map[a] = b;
+    return map[a];
+}
+
 int FindTest(HashTable<int,int>& map, int a) {
     auto iter = map.find(a);
     if (iter == map.end()) { 
@@ -29,6 +35,11 @@ int FindTestString(HashTable<std::string,int>& map, const std::string& key) {
 TEST(SubscriptionTest,HandlesSubscription) {
     EXPECT_EQ(SubscriptTest(2,3),3);
     EXPECT_EQ(SubscriptTest(-2,-3),-3);
+}
+
+TEST(SubscriptionTestString,HandlesStringSubscription) {
+    EXPECT_EQ(SubscriptTestString("Ani",3),3);
+    EXPECT_EQ(SubscriptTestString("Arman",-3),-3);
 }
 
 TEST(FindAndInsertTest,HandlesFindAndInsert) {
