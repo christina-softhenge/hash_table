@@ -13,7 +13,6 @@ public:
     std::size_t size() const;
     void insert(const Key& key, const Value& val);
     Value& operator[](const Key& key);
-    bool find(const Key& key);
     int hashFunction(const Key& key);
 private:
     struct Node {

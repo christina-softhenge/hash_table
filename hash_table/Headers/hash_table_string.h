@@ -12,7 +12,7 @@ public:
     }
 
     ~HashTable() {
-        for (Node* node : m_HashTable) {
+        for (Node*& node : m_HashTable) {
             while(node) {
                 Node* tmp = node->next;
                 delete node;
@@ -22,7 +22,15 @@ public:
     }
 
     std::size_t size() const {
-        return m_HashTable.size();
+        std::size_t size{};
+        for (int i = 0; i < m_HashTable.size(); ++i) {
+            Node* node = m_HashTable[i];
+            while (node) {
+                ++size;
+                node = node->next;
+            }
+        }
+        return size;
     }
 
 
@@ -54,7 +62,9 @@ public:
             } 
             node = node->next;
         }
+        Node* tablesNode = m_HashTable[hashValue];
         node = new Node(key,0);
+        node->next = tablesNode;
         m_HashTable[hashValue] = node;
         return node->pair.second;
     }

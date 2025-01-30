@@ -21,7 +21,15 @@ public:
     }
 
     std::size_t size() const {
-        return m_HashTable.size();
+        std::size_t size{};
+        for (int i = 0; i < m_HashTable.size(); ++i) {
+            Node* node = m_HashTable[i];
+            while (node) {
+                ++size;
+                node = node->next;
+            }
+        }
+        return size;
     }
 
 
@@ -44,7 +52,7 @@ public:
         }
     }
 
-    Value& operator[](const int& key) {
+    Value& operator[](int key) {
         int hashValue = hashFunction(key);
         Node* node = m_HashTable[hashValue];
         while (node) {
@@ -53,7 +61,9 @@ public:
             } 
             node = node->next;
         }
+        Node* tablesNode = m_HashTable[hashValue];
         node = new Node(key,0);
+        node->next = tablesNode;
         m_HashTable[hashValue] = node;
         return node->pair.second;
     }
