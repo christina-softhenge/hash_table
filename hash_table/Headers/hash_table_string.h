@@ -106,7 +106,11 @@ public:
 
 
     int hashFunction(const std::string& key) {
-        return key.size() % m_tableSize;
+        int sum{};
+        for (char ch : key) {
+            sum += static_cast<int>(ch);
+        }
+        return sum % m_tableSize;
     }
 
     private:
