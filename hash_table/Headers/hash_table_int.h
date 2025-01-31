@@ -32,7 +32,7 @@ public:
         m_tableSize *= 2; 
         for (int i = 0; i < oldSize; ++i) {
             Node* node = m_HashTable[i];
-            if (node) {
+            while (node) {
                 int hashValue = hashFunction(node->pair.first);
                 Node* newNode = new Node(node->pair);
                 newNode->next = newTable[hashValue];
@@ -42,7 +42,7 @@ public:
         }
         for (int i = 0; i < oldSize; ++i) {
             Node* node = m_HashTable[i];
-            if (node) {
+            while (node) {
                 Node* tmp = node->next;
                 delete node;
                 node = tmp;
