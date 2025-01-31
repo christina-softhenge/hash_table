@@ -3,6 +3,7 @@
 
 #include "hash_table.h"
 
+
 template <typename Value>
 class HashTable<int, Value> {
 public:
@@ -20,9 +21,39 @@ public:
         }
     }
 
+    float load_factor() {
+        return float(size())/m_HashTable.size();
+    }
+
+    void resize() {
+        std::vector<Node*> newTable;
+        newTable.resize(m_tableSize*2);
+        int oldSize = m_tableSize;
+        m_tableSize *= 2; 
+        for (int i = 0; i < oldSize; ++i) {
+            Node* node = m_HashTable[i];
+            if (node) {
+                int hashValue = hashFunction(node->pair.first);
+                Node* newNode = new Node(node->pair);
+                newNode->next = newTable[hashValue];
+                newTable[hashValue] = newNode;
+                node = node->next;
+            }
+        }
+        for (int i = 0; i < oldSize; ++i) {
+            Node* node = m_HashTable[i];
+            if (node) {
+                Node* tmp = node->next;
+                delete node;
+                node = tmp;
+            }
+        }
+        m_HashTable = newTable;
+    }
+
     std::size_t size() const {
         std::size_t size{};
-        for (int i = 0; i < m_HashTable.size(); ++i) {
+        for (int i = 0; i < m_tableSize; ++i) {
             Node* node = m_HashTable[i];
             while (node) {
                 ++size;
@@ -34,6 +65,9 @@ public:
 
 
     void insert(const int key, const Value& val) {
+        if (load_factor() > 0.7) {
+            resize();
+        }
         int hashValue = hashFunction(key);
         Node* newNode = new Node(key, val);
         newNode->next = m_HashTable[hashValue];
@@ -53,6 +87,9 @@ public:
     }
 
     Value& operator[](int key) {
+        if (load_factor() > 0.7) {
+            resize();
+        }
         int hashValue = hashFunction(key);
         Node* node = m_HashTable[hashValue];
         while (node) {
@@ -76,6 +113,7 @@ public:
     private:
     struct Node {
         Node(int key, Value val) : pair{key,val}, next(nullptr) {}
+        Node(std::pair<int,Value> valPair) : pair{valPair}, next{nullptr} {}
         std::pair<int,Value> pair;
         Node* next;
     };

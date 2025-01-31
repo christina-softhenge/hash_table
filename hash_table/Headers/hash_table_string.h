@@ -33,8 +33,40 @@ public:
         return size;
     }
 
+    float load_factor() {
+        return float(size())/m_HashTable.size();
+    }
+    
+    void resize() {
+        std::vector<Node*> newTable;
+        newTable.resize(m_tableSize*2);
+        int oldSize = m_tableSize;
+        m_tableSize *= 2; 
+        for (int i = 0; i < oldSize; ++i) {
+            Node* node = m_HashTable[i];
+            if (node) {
+                int hashValue = hashFunction(node->pair.first);
+                Node* newNode = new Node(node->pair);
+                newNode->next = newTable[hashValue];
+                newTable[hashValue] = newNode;
+                node = node->next;
+            }
+        }
+        for (int i = 0; i < oldSize; ++i) {
+            Node* node = m_HashTable[i];
+            if (node) {
+                Node* tmp = node->next;
+                delete node;
+                node = tmp;
+            }
+        }
+        m_HashTable = newTable;
+    }
 
     void insert(const std::string& key, const Value& val) {
+        if (load_factor() > 0.7) {
+            resize();
+        }
         int hashValue = hashFunction(key);
         Node* newNode = new Node(key, val);
         newNode->next = m_HashTable[hashValue];
@@ -54,6 +86,9 @@ public:
     }
 
     Value& operator[](const std::string& key) {
+        if (load_factor() > 0.7) {
+            resize();
+        }
         int hashValue = hashFunction(key);
         Node* node = m_HashTable[hashValue];
         while (node) {
@@ -77,6 +112,7 @@ public:
     private:
     struct Node {
         Node(std::string key, Value val) : pair{key,val}, next(nullptr) {}
+        Node(std::pair<std::string,Value> valPair) : pair{valPair}, next{nullptr} {}
         std::pair<std::string,Value> pair;
         Node* next;
     };
