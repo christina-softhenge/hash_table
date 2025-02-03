@@ -1,11 +1,54 @@
 #include <gtest/gtest.h>
 #include "Headers/hash_table_int.h"
 #include "Headers/hash_table_string.h"
+#include <chrono>
 
 int SubscriptTest(int a, int b) {
     HashTable<int,int> map;
     map[a] = b;
     return map[a];
+}
+
+HashTable<int,int> makeRandomHashMap(int num_elements, std::vector<int>& keys) {
+    HashTable<int,int> hashMap;
+    keys.reserve(num_elements);
+    for (int i = 0; i < num_elements; ++i) {
+        int key = rand()%100000;
+        keys.push_back(key);
+        hashMap[key] = i;
+    }
+    return hashMap;
+}
+
+void LookupTimeCheck(int num_elements) {
+    std::vector<int> keys;
+    HashTable<int,int> hashMap = makeRandomHashMap(num_elements, keys);
+    int lookups = 10000;
+    int value;
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < lookups; ++i) {
+        value = hashMap[keys[rand() % num_elements]];
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration<double, std::micro>(end - start).count() / lookups;
+    std::cout << "Lookup duration: " << duration << std::endl; 
+}
+
+void InsetTimeCheck(int num_elements) {
+    HashTable<int,int> hashMap;
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < num_elements; ++i) {
+        int key = rand()%100000;
+        hashMap[key] = i;
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration<double, std::micro>(end - start).count() / num_elements;
+    std::cout << "Insert duration: " << duration << std::endl; 
+}
+
+TEST(TimeCheckingTest,HandlesTimeCheck) {
+    LookupTimeCheck(1000000);
+    InsetTimeCheck(1000000);
 }
 
 int SubscriptTestString(std::string a, int b) {
