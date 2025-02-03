@@ -7,7 +7,7 @@
 template <typename Value>
 class HashTable<std::string, Value> {
 public:
-    HashTable() : m_tableSize{17} {
+    HashTable() : m_tableSize{17}, m_size{} {
         m_HashTable.resize(m_tableSize,nullptr);
     }
 
@@ -21,20 +21,8 @@ public:
         }
     }
 
-    std::size_t size() const {
-        std::size_t size{};
-        for (int i = 0; i < m_HashTable.size(); ++i) {
-            Node* node = m_HashTable[i];
-            while (node) {
-                ++size;
-                node = node->next;
-            }
-        }
-        return size;
-    }
-
     float load_factor() {
-        return float(size())/m_HashTable.size();
+        return float(m_size)/m_HashTable.size();
     }
     
     void resize() {
@@ -67,6 +55,7 @@ public:
         if (load_factor() > 0.7) {
             resize();
         }
+        ++m_size;
         int hashValue = hashFunction(key);
         Node* newNode = new Node(key, val);
         newNode->next = m_HashTable[hashValue];
@@ -97,6 +86,7 @@ public:
             } 
             node = node->next;
         }
+        ++m_size;
         Node* tablesNode = m_HashTable[hashValue];
         node = new Node(key,0);
         node->next = tablesNode;
@@ -120,6 +110,7 @@ public:
         std::pair<std::string,Value> pair;
         Node* next;
     };
+    int m_size;
     int m_tableSize;
     std::vector<Node*> m_HashTable;
 
