@@ -8,28 +8,26 @@
 
 template <typename Key>
 struct Hash {
-    std::size_t operator()(const Key& key, int hashTableSize) const {
-        std::cout << "hash main\n";
-        return std::hash<Key>{}(key) % hashTableSize;
+    std::size_t operator()(const Key& key) const {
+        return std::hash<Key>{}(key) ;
     }
 };
 
 template <>
 struct Hash<std::string> {
-    std::size_t operator()(const std::string& key, int hashTableSize) const {
+    std::size_t operator()(const std::string& key) const {
         int sum{};
         for (char ch : key) {
             sum += static_cast<int>(ch);
         }
-        return sum % hashTableSize;
+        return sum;
     }
 };
 
 template<>
 struct Hash<int> {
-    std::size_t operator()(const int& key, int hashTableSize) const {
-        std::cout << "hash int\n";
-        return key % hashTableSize;
+    std::size_t operator()(const int& key) const {
+        return key;
     }
 };
 
@@ -54,46 +52,13 @@ public:
         }
     }
 
-    float load_factor() 
-    {
-        return float(m_size)/m_HashTable.size();
-    }
-
-    
-    void resize() 
-    {
-        std::vector<Node*> newTable;
-        newTable.resize(m_tableSize*2);
-        int oldSize = m_tableSize;
-        m_tableSize *= 2; 
-        for (int i = 0; i < oldSize; ++i) {
-            Node* node = m_HashTable[i];
-            while (node) {
-                int hashValue = hashFunction(node->pair.first, m_tableSize);
-                Node* newNode = new Node(node->pair);
-                newNode->next = newTable[hashValue];
-                newTable[hashValue] = newNode;
-                node = node->next;
-            }
-        }
-        for (int i = 0; i < oldSize; ++i) {
-            Node* node = m_HashTable[i];
-            while (node) {
-                Node* tmp = node->next;
-                delete node;
-                node = tmp;
-            }
-        }
-        m_HashTable = newTable;
-    }
-
     void insert(const Key& key, const Value& val) 
     {
         if (load_factor() > 0.7) {
             resize();
         }
         ++m_size;
-        int hashValue = hashFunction(key, m_tableSize);
+        int hashValue = hashFunction(key);
         Node* newNode = new Node(key, val);
         newNode->next = m_HashTable[hashValue];
         m_HashTable[hashValue] = newNode;
@@ -112,8 +77,12 @@ public:
         }
     }
 
-    Value& subscriptHelper(const Key& key, int hashValue) 
+    Value& operator[](const Key& key) 
     {
+        if (load_factor() > 0.7) {
+            resize();
+        }
+        int hashValue = hashFunction(key);
         Node* node = m_HashTable[hashValue];
         while (node) {
             if (node->pair.first == key) {
@@ -129,20 +98,46 @@ public:
         return node->pair.second;
     }
 
-    Value& operator[](const Key& key) 
+private:  //private methods
+    int hashFunction(const Key& key) 
     {
-        if (load_factor() > 0.7) {
-            resize();
-        }
-        int hashValue = hashFunction(key, m_tableSize);
-        return subscriptHelper(key,hashValue);
+        return m_hashFunctionHelper(key) % m_tableSize;
     }
 
-    int getTableSize() 
+    float load_factor() 
     {
-        return m_tableSize;
+        return float(m_size) / m_HashTable.size();
     }
-private:
+
+    
+    void resize() 
+    {
+        std::vector<Node*> newTable;
+        newTable.resize(m_tableSize*2);
+        int oldSize = m_tableSize;
+        m_tableSize *= 2; 
+        for (int i = 0; i < oldSize; ++i) {
+            Node* node = m_HashTable[i];
+            while (node) {
+                int hashValue = hashFunction(node->pair.first);
+                Node* newNode = new Node(node->pair);
+                newNode->next = newTable[hashValue];
+                newTable[hashValue] = newNode;
+                node = node->next;
+            }
+        }
+        for (int i = 0; i < oldSize; ++i) {
+            Node* node = m_HashTable[i];
+            while (node) {
+                Node* tmp = node->next;
+                delete node;
+                node = tmp;
+            }
+        }
+        m_HashTable = newTable;
+    }
+
+private:    //member data
     struct Node {
         Node(Key key, Value val) : pair{key,val}, next(nullptr) {}
         Node(std::pair<Key,Value> valPair) : pair{valPair}, next{nullptr} {}
@@ -152,7 +147,7 @@ private:
     int m_size;
     int m_tableSize;
     std::vector<Node*> m_HashTable;
-    HashFunction hashFunction;
+    HashFunction m_hashFunctionHelper;
 
 public:
     struct Iterator {
@@ -198,7 +193,7 @@ public:
                 m_ptr = m_ptr->next;
                 return *this;
             }
-            for (int i = m_table->hashFunction(m_ptr->pair.first, m_table->m_tableSize) + 1; i < m_table->m_tableSize; ++i) {
+            for (int i = m_table->hashFunction(m_ptr->pair.first) + 1; i < m_table->m_tableSize; ++i) {
                 if (m_table->m_HashTable[i]) {
                     m_ptr = m_table->m_HashTable[i];
                     return *this;
@@ -215,7 +210,7 @@ public:
             return tmp;
         }
 
-    public:
+    private:
         pointer m_ptr;
         HashTable *m_table;
     };

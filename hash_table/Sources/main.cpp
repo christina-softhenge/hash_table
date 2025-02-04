@@ -1,6 +1,5 @@
 #include <iostream>
-#include "Headers/hash_table_int.h"
-#include "Headers/hash_table_string.h"
+#include "Headers/hash_table.h"
 #include "unordered_map"
 
 int main() {
