@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
-#include "Headers/hash_table_int.h"
-#include "Headers/hash_table_string.h"
+#include "Headers/hash_table.h"
 #include <chrono>
 
 int SubscriptTest(int a, int b) {
