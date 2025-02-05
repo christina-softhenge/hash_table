@@ -72,14 +72,14 @@ public:
         m_HashTable[hashValue] = newNode;
     }
 
-    void erase(const Key& key) {
+    bool erase(const Key& key) {
         int hashVal = hashFunction(key);
         Node* node = m_HashTable[hashVal];
         if (node->pair.first == key) {
             m_HashTable[hashVal] = node->next;
             delete node;
             --m_size;
-            return;
+            return 1;
         }
         Node* prev = node;
         while (prev->next) {
@@ -88,11 +88,13 @@ public:
                 prev->next = node->next;
                 delete node;
                 --m_size;
-                return;
+                return 1;
             }
             prev = node;
         }
+        return 0;
     }
+
     
     void clear() {
         for (Node* node : m_HashTable) {
@@ -282,6 +284,40 @@ public:
             }
         }
         return end();
+    }
+    
+    Iterator erase (Iterator pos) {
+        int key = pos->pair.first;
+        int hashValue = hashFunction(key);
+        Node* node = m_HashTable[hashValue];
+        if (node->pair.first == key) {
+            Iterator nextIt = ++Iterator(node,this); 
+            m_HashTable[hashValue] = node->next;
+            delete node;
+            --m_size;
+            return nextIt;
+        }
+        Node* prev = node;
+        while (prev->next) {
+            node = prev->next;
+            if (node->pair.first == key) {
+                Iterator nextIt = ++Iterator(node,this); 
+                prev->next = node->next;
+                delete node;
+                --m_size;
+                return nextIt;
+            }
+            prev = node;
+        }
+        return end();
+    }
+
+    Iterator erase(Iterator first, Iterator last) {
+        Iterator it = first;
+        while (it != last && it != end()) {
+            it = erase(it);
+        }
+        return last;
     }
 };
 
