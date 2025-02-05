@@ -67,7 +67,7 @@ int FindTest(HashTable<int,int>& map, int a) {
         std::cout << "out of range\n";
         return 0;
     }
-    return iter->pair.second;
+    return iter->second;
 }
 
 int FindTestString(HashTable<std::string,int>& map, const std::string& key) {
@@ -76,7 +76,109 @@ int FindTestString(HashTable<std::string,int>& map, const std::string& key) {
         std::cout << "out of range\n";
         return 0;
     }
-    return iter->pair.second;
+    return iter->second;
+}
+
+void test_stl_algorithms() {
+    HashTable<std::string, int> ht;
+    
+    std::vector<std::pair<std::string, int>> initial_data = {
+        {"apple", 1}, {"banana", 2}, {"cherry", 3},
+        {"date", 4}, {"elderberry", 5}, {"fig", 6}
+    };
+    
+    for (const auto& pair : initial_data) {
+        ht.insert(pair);
+    }
+
+    int i = 0;
+    for (auto it = ht.begin(); it != ht.end(); ++it) {
+        std::cout << "it" << it->first << std::endl;
+        if (++i > 10) {
+            break;
+        }
+    }
+    
+    {
+        auto endIT = ht.end();
+        bool all_positive = std::all_of(ht.begin(), endIT,
+            [](const auto& pair) { return pair.second > 0; });
+        assert(all_positive);
+        
+        bool has_even = std::any_of(ht.begin(), ht.end(),
+            [](const auto& pair) { return pair.second % 2 == 0; });
+        assert(has_even);
+        
+        bool none_negative = std::none_of(ht.begin(), ht.end(),
+            [](const auto& pair) { return pair.second < 0; });
+        assert(none_negative);
+        
+        auto count_even = std::count_if(ht.begin(), ht.end(),
+            [](const auto& pair) { return pair.second % 2 == 0; });
+        assert(count_even > 0);
+        
+        auto it = std::find_if(ht.begin(), ht.end(),
+            [](const auto& pair) { return pair.second == 3; });
+        assert(it != ht.end() && it->first == "cherry");
+    }
+    
+    {
+        std::vector<std::pair<std::string, int>> target;
+        
+        std::copy_if(ht.begin(), ht.end(), std::back_inserter(target),
+            [](const auto& pair) { return pair.second % 2 == 0; });
+        
+        std::vector<int> values;
+        std::transform(ht.begin(), ht.end(), std::back_inserter(values),
+            [](const auto& pair) { return pair.second * 2; });
+        
+        std::vector<std::pair<std::string, int>> modified;
+        std::replace_copy_if(ht.begin(), ht.end(), std::back_inserter(modified),
+            [](const auto& pair) { return pair.second > 3; },
+            std::make_pair(std::string("high"), 999));
+    }
+    
+    {
+        std::vector<std::pair<std::string, int>> sorted(ht.begin(), ht.end());
+        
+        std::sort(sorted.begin(), sorted.end(),
+            [](const auto& a, const auto& b) { return a.second < b.second; });
+        
+        bool is_sorted = std::is_sorted(sorted.begin(), sorted.end(),
+            [](const auto& a, const auto& b) { return a.second < b.second; });
+        assert(is_sorted);
+        
+        std::vector<std::pair<std::string, int>> top3(3);
+
+        std::partial_sort_copy(ht.begin(), ht.end(),
+            top3.begin(), top3.end(),
+            [](const auto& a, const auto& b) { return a.second > b.second; });
+
+    
+    {
+        int sum = std::accumulate(ht.begin(), ht.end(), 0,
+            [](int total, const auto& pair) { return total + pair.second; });
+        
+        std::vector<int> weights(ht.size(), 2);
+        int weighted_sum = std::inner_product(
+            ht.begin(), ht.end(), weights.begin(), 0,
+            std::plus<>(),
+            [](const auto& pair, int weight) { return pair.second * weight; });
+    }
+    
+    {
+        std::vector<std::pair<std::string, int>> vec(ht.begin(), ht.end());
+        std::sort(vec.begin(), vec.end());
+        
+        bool found = std::binary_search(vec.begin(), vec.end(),
+            std::make_pair(std::string("cherry"), 3));
+        
+        auto range = std::equal_range(vec.begin(), vec.end(),
+            std::make_pair(std::string("cherry"), 3));
+    }
+    
+    std::cout << "All STL algorithm tests passed!\n";
+    }
 }
 
 TEST(SubscriptionTest,HandlesSubscription) {
@@ -97,6 +199,10 @@ TEST(FindAndInsertTest,HandlesFindAndInsert) {
     for (int i = 0; i < 100; ++i) {
         EXPECT_EQ(FindTest(mapint,i),i);
     }
+}
+
+TEST(AlgorithmsTest, HandlesSTLAlgorithms) {
+    test_s
 }
 
 TEST(StringFindAndInsertTest,HandlesStringFindAndInsert) {

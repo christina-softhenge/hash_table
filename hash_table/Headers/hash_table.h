@@ -51,6 +51,19 @@ public:
             }
         }
     }
+
+    HashTable& operator=(const HashTable& other) {
+        if (this != &other) {
+            clear();
+            for (auto node : other.m_HashTable) {
+                while (node) {
+                    this->insert(node->pair);
+                    node = node->next;
+                }
+            }
+        }
+        return *this;
+    }
     
     int size() {
         return m_size;
@@ -70,6 +83,10 @@ public:
         Node* newNode = new Node(key, val);
         newNode->next = m_HashTable[hashValue];
         m_HashTable[hashValue] = newNode;
+    }
+
+    void insert(std::pair<Key,Value> pair) {
+        insert(pair.first,pair.second);
     }
 
     bool erase(const Key& key) {
@@ -187,7 +204,7 @@ private:    //member data
     struct Node {
         Node(Key key, Value val) : pair{key,val}, next(nullptr) {}
         Node(std::pair<Key,Value> valPair) : pair{valPair}, next{nullptr} {}
-        std::pair<Key,Value> pair;
+        std::pair<const Key,Value> pair;
         Node* next;
     };
     int m_size;
@@ -199,15 +216,19 @@ public:
     struct Iterator {
         using iterator_category = std::forward_iterator_tag;
         using difference_type = std::ptrdiff_t;
-        using value_type = Node;
-        using pointer = value_type *;
-        using reference = value_type &;
+        using value_type = std::pair<const Key, Value>;
+        using pointer = value_type*;
+        using reference = value_type&;
 
-        Iterator(pointer ptr, HashTable *table) : 
+        Iterator(Node *ptr, HashTable *table) : 
         m_ptr{ptr}, 
         m_table{table} {}
-        reference operator*() { return &m_ptr; }
-        pointer operator->() { return m_ptr; }
+        Iterator(const Iterator& oth) {
+            this->m_ptr = oth.m_ptr;
+            this->m_table = oth.m_table;
+        }
+        reference operator*() { return m_ptr->pair; }
+        pointer operator->() { return &m_ptr->pair; }
 
         operator bool() const
         {
@@ -224,15 +245,13 @@ public:
 
         bool operator!=(const Iterator &oth)
         {
-            if (this->m_ptr != oth.m_ptr) {
-                return true;
-            }
-            return false;
+            return ! (*this == oth);
         }
 
-        Iterator &operator++()
+        Iterator& operator++()
         {
             if (!m_ptr) {
+                *this = m_table->end();
                 return *this;
             }
             if (m_ptr->next) {
@@ -245,7 +264,7 @@ public:
                     return *this;
                 }
             }
-            m_ptr = nullptr;
+            *this = m_table->end();
             return *this;
         }
 
@@ -257,7 +276,7 @@ public:
         }
 
     private:
-        pointer m_ptr;
+        Node* m_ptr;
         HashTable *m_table;
     };
 
@@ -268,18 +287,18 @@ public:
                 return Iterator(node,this);
             }
         }
-        return Iterator(nullptr, this);
+        return end();
     }
 
     Iterator end()
     {
-        return Iterator(*m_HashTable.end(), this); 
+        return Iterator(m_HashTable[m_HashTable.size()], this); 
     }
 
     Iterator find(const Key& key) 
     {
         for (Iterator it = this->begin(); it != this->end(); ++it) {
-            if (it->pair.first == key) {
+            if (it->first == key) {
                 return it;
             }
         }
