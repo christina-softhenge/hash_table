@@ -6,15 +6,14 @@ int main() {
     HashTable<int,int> map;
     map.insert(4,3);
     map.insert(21,2);
-    std::cout << map.begin()->pair.first << '\n';
-    // std::cout << map[4] << ' ' << map[21] << ' ' << map[7] << '\n';
-    // map.print();
-    map.end();
-    map.find(21);
-
-    HashTable<std::string,int> mapStr;
-    mapStr["Krist"] = 4;
-    mapStr["Nare"] = 2;
-    mapStr.print();
-    return 0;
+    map[65] = 4;
+    map[43] = 3;
+    map[13] = 75;
+    map[38] = 43;
+    map.erase(4);
+    map.print();
+    std::cout << "number of elements: " << map.size() << std::endl; 
+    map.clear();
+    map.print();
+    std::cout << "isEmpty: " << map.empty() << std::endl; 
 }
