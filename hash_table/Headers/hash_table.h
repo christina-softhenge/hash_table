@@ -51,6 +51,14 @@ public:
             }
         }
     }
+    
+    int size() {
+        return m_size;
+    }
+
+    bool empty() {
+        return !static_cast<bool>(m_size);
+    }
 
     void insert(const Key& key, const Value& val) 
     {
@@ -84,6 +92,20 @@ public:
             }
             prev = node;
         }
+    }
+    
+    void clear() {
+        for (Node* node : m_HashTable) {
+            while(node) {
+                Node* tmp = node->next;
+                delete node;
+                node = tmp;
+            }
+        }
+        m_tableSize = 17;
+        m_HashTable.clear();
+        m_HashTable.assign(m_tableSize, nullptr);
+        m_size = 0;
     }
 
     void print() 
