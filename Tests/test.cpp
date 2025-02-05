@@ -19,7 +19,7 @@ HashTable<int,int> makeRandomHashMap(int num_elements, std::vector<int>& keys) {
     return hashMap;
 }
 
-void LookupTimeCheck(int num_elements) {
+double LookupTimeCheck(int num_elements) {
     std::vector<int> keys;
     HashTable<int,int> hashMap = makeRandomHashMap(num_elements, keys);
     int lookups = 10000;
@@ -30,7 +30,8 @@ void LookupTimeCheck(int num_elements) {
     }
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration<double, std::micro>(end - start).count() / lookups;
-    std::cout << "Lookup duration: " << duration << std::endl; 
+    std::cout << "Lookup duration in element number of: " << num_elements << " is: " << duration << std::endl; 
+    return duration;
 }
 
 void InsetTimeCheck(int num_elements) {
@@ -42,12 +43,16 @@ void InsetTimeCheck(int num_elements) {
     }
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration<double, std::micro>(end - start).count() / num_elements;
-    std::cout << "Insert duration: " << duration << std::endl; 
+    std::cout << "Insert duration in element number of: " << num_elements << " is: " << duration << std::endl; 
 }
 
 TEST(TimeCheckingTest,HandlesTimeCheck) {
-    LookupTimeCheck(1000000);
-    InsetTimeCheck(1000000);
+    for (int i = 10,j = 1000000; i < 10000, j >= 10000; i*=10,j/=10) {
+        double res1 = LookupTimeCheck(i);
+        double res2 = LookupTimeCheck(j);
+        double diff = std::abs(res1-res2);
+        EXPECT_NEAR(diff,0,0.2);
+    }
 }
 
 int SubscriptTestString(std::string a, int b) {
