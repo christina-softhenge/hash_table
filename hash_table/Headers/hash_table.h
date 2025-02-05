@@ -64,6 +64,28 @@ public:
         m_HashTable[hashValue] = newNode;
     }
 
+    void erase(const Key& key) {
+        int hashVal = hashFunction(key);
+        Node* node = m_HashTable[hashVal];
+        if (node->pair.first == key) {
+            m_HashTable[hashVal] = node->next;
+            delete node;
+            --m_size;
+            return;
+        }
+        Node* prev = node;
+        while (prev->next) {
+            node = prev->next;
+            if (node->pair.first == key) {
+                prev->next = node->next;
+                delete node;
+                --m_size;
+                return;
+            }
+            prev = node;
+        }
+    }
+
     void print() 
     {
         for (int i = 0; i < m_tableSize; ++i) {
