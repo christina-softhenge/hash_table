@@ -38,12 +38,29 @@ public:
     m_tableSize{17}, 
     m_size{} 
     {
-        m_HashTable.resize(m_tableSize,nullptr);
+        m_HashTable.resize(m_tableSize, nullptr);
+    }
+
+    HashTable(const HashTable& oth) : 
+        m_tableSize{oth.m_tableSize},
+        m_size{oth.m_size},
+        m_hashFunctionHelper{oth.m_hashFunctionHelper}
+    {
+        this->m_HashTable.resize(m_tableSize, nullptr);
+        for (int i = 0; i < oth.m_tableSize; ++i) {
+            Node* node = oth.m_HashTable[i];
+            while (node) {
+                Node* newNode = new Node(node->pair);
+                newNode->next = this->m_HashTable[i];
+                this->m_HashTable[i] = newNode;
+                node = node->next;
+            }
+        }
     }
 
     ~HashTable() 
     {
-        for (Node* node : m_HashTable) {
+        for (auto node : m_HashTable) {
             while(node) {
                 Node* tmp = node->next;
                 delete node;
@@ -235,15 +252,11 @@ public:
             return m_ptr != nullptr;
         }
 
-        bool operator==(const Iterator &oth)
-        {
-            if (this->m_ptr == oth.m_ptr) {
-                return true;
-            }
-            return false;
+        bool operator==(const Iterator &oth) const {
+            return this->m_ptr == oth.m_ptr;
         }
 
-        bool operator!=(const Iterator &oth)
+        bool operator!=(const Iterator &oth) const
         {
             return ! (*this == oth);
         }
@@ -280,7 +293,7 @@ public:
         HashTable *m_table;
     };
 
-    Iterator begin()
+    Iterator begin() 
     {
         for (Node* node : m_HashTable) {
             if (node) {
@@ -290,9 +303,9 @@ public:
         return end();
     }
 
-    Iterator end()
+    Iterator end() 
     {
-        return Iterator(m_HashTable[m_HashTable.size()], this); 
+        return Iterator(nullptr, this); 
     }
 
     Iterator find(const Key& key) 
@@ -306,7 +319,7 @@ public:
     }
     
     Iterator erase (Iterator pos) {
-        int key = pos->pair.first;
+        int key = pos->first;
         int hashValue = hashFunction(key);
         Node* node = m_HashTable[hashValue];
         if (node->pair.first == key) {
